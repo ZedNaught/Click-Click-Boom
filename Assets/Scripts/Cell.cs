@@ -81,16 +81,17 @@ public class Cell : MonoBehaviour {
         spriteRenderer.color = Color.yellow;
     }
 
-    public void Click() {
-        if (Clickable) {
-            if (ContainsMine) {
-                cellState = CellState.Detonated;
-                spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
-            }
-            else {
-                cellState = CellState.Revealed;
-                spriteRenderer.sprite = Board.Instance.spritesDict["cell_0"];
-            }
+    public void Reveal(int adjacentMineCount) {
+        if (!Clickable) {
+            return;
+        }
+        if (ContainsMine) {
+            cellState = CellState.Detonated;
+            spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
+        }
+        else {
+            cellState = CellState.Revealed;
+            spriteRenderer.sprite = Board.Instance.spritesDict["cell_" + adjacentMineCount];
         }
     }
 }

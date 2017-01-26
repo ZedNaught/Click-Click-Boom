@@ -142,12 +142,12 @@ public class Board : MonoBehaviour {
     }
 
     void RevealCell(Cell cell) {
-        cell.Click();
+        cell.Reveal(GetAdjacentMineCount(cell));
         if (cell.ContainsMine) {
             // TODO // handle game over
             Debug.Log("game over");
         }
-        else if (GetAdacentMineCount(cell) == 0) {
+        else if (GetAdjacentMineCount(cell) == 0) {
             foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
                 if (!adjacentCell.Revealed) {
                     RevealCell(adjacentCell);
@@ -186,7 +186,7 @@ public class Board : MonoBehaviour {
         return adjacentCells;
     }
 
-    int GetAdacentMineCount(Cell cell) {
+    int GetAdjacentMineCount(Cell cell) {
         int numAdjacentMines = 0;
         List<Cell> adjacentCells = GetAdjacentCells(cell);
         foreach (Cell adjacentCell in adjacentCells) {
