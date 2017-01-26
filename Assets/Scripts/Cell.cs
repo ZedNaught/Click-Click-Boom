@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class Cell : MonoBehaviour {
-    enum CellState { Default, Revealed, Flagged, Suspect }
+    enum CellState { Default, Revealed, Flagged, Suspect, Detonated }
     CellState cellState;
     bool _containsMine;
     public bool ContainsMine {
@@ -11,8 +11,10 @@ public class Cell : MonoBehaviour {
         }
         set {
             _containsMine = value;
+
+            // use flag sprite if cell contains mine to debug placement
             if (_containsMine) {
-                spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_undetonated"];
+                spriteRenderer.sprite = Board.Instance.spritesDict["block_flag"];
             }
             else {
                 spriteRenderer.sprite = Board.Instance.spritesDict["block"];
@@ -37,7 +39,7 @@ public class Cell : MonoBehaviour {
         }
     }
     static CellState[] clickableCellStates = { CellState.Default, CellState.Suspect };
-    bool Clickable {
+    public bool Clickable {
         get {
             bool clickable = false;
             foreach (CellState clickableState in clickableCellStates) {
@@ -47,7 +49,15 @@ public class Cell : MonoBehaviour {
                 }
             }
             return clickable;
-        }    
+        }
+    }
+
+    public int xPosition;
+    public int yPosition;
+    public bool Revealed {
+        get {
+            return cellState == CellState.Revealed;
+        }
     }
 
     SpriteRenderer spriteRenderer;
@@ -67,13 +77,20 @@ public class Cell : MonoBehaviour {
         spriteRenderer.color = Color.white;
     }
 
+    public void Highlight() {
+        spriteRenderer.color = Color.yellow;
+    }
+
     public void Click() {
         if (Clickable) {
             if (ContainsMine) {
-                Debug.Log("MINE!");
+                cellState = CellState.Detonated;
+                spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
             }
-            spriteRenderer.sprite = Board.Instance.spritesDict["cell_0"];
-            cellState = CellState.Revealed;
+            else {
+                cellState = CellState.Revealed;
+                spriteRenderer.sprite = Board.Instance.spritesDict["cell_0"];
+            }
         }
     }
 }

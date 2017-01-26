@@ -50,9 +50,12 @@ public class Board : MonoBehaviour {
         }
     }
 
+    bool firstClick;
+
 
     void Start() {
         Instance = this;
+        firstClick = true;
         InitializeSprites();
         InitializeBoard();
     }
@@ -99,6 +102,8 @@ public class Board : MonoBehaviour {
                 Vector3 cellPosition = boardTopLeft + (dx + 0.5f) * cellSizeInUnits * Vector3.right + (dy + 0.5f) * cellSizeInUnits * Vector3.down;
                 Cell cell = ((GameObject) Instantiate(cellPrefab, cellPosition, Quaternion.identity, transform)).GetComponent<Cell>();
                 cell.gameObject.name = "cell_" + dx + "_" + dy;
+                cell.xPosition = dx;
+                cell.yPosition = dy;
                 cells[dy, dx] = cell;
             }
         }
@@ -112,13 +117,42 @@ public class Board : MonoBehaviour {
 
     void HandleInput() {
         if (Input.GetMouseButtonUp(0) && CellUnderMouse != null) {
-            CellUnderMouse.Click();
+            while(firstClick && CellUnderMouse.ContainsMine) {
+                PlaceMines();
+            }
+            firstClick = false;
+            RevealCell(CellUnderMouse);
         }
 
         // temporary // re-place mines on right-click
         if (Input.GetKeyUp(KeyCode.R)) {
             Debug.Log("re-placing mines due to \"R\" press");
             PlaceMines();
+        }
+
+        // temporary // debug adjacent cells code
+        if (Input.GetKeyUp(KeyCode.A) && CellUnderMouse != null) {
+            List<Cell> adjacentCells = GetAdjacentCells(CellUnderMouse);
+            foreach (Cell cell in adjacentCells) {
+                cell.Highlight();
+            }
+            Debug.Log("highlighted " + adjacentCells.Count + " adjacent mines due to \"A\" press");
+        }
+
+    }
+
+    void RevealCell(Cell cell) {
+        cell.Click();
+        if (cell.ContainsMine) {
+            // TODO // handle game over
+            Debug.Log("game over");
+        }
+        else if (GetAdacentMineCount(cell) == 0) {
+            foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
+                if (!adjacentCell.Revealed) {
+                    RevealCell(adjacentCell);
+                }
+            }
         }
     }
 
@@ -133,5 +167,33 @@ public class Board : MonoBehaviour {
         else {
             CellUnderMouse = null;
         }
+    }
+
+    List<Cell> GetAdjacentCells(Cell cell) {
+        // TODO // could probably be optimized
+        List<Cell> adjacentCells = new List<Cell>();
+        for (int y = cell.yPosition - 1; y <= cell.yPosition + 1; y++) {
+            for (int x = cell.xPosition - 1; x <= cell.xPosition + 1; x++) {
+                // make sure cell at coordinates exists and isn't the input cell
+                if ((x != cell.xPosition || y != cell.yPosition) &&
+                        x >= 0 && x < currentDifficulty.width &&
+                        y >= 0 && y < currentDifficulty.height) {
+                    adjacentCells.Add(cells[y, x]);
+                }
+            }
+        }
+
+        return adjacentCells;
+    }
+
+    int GetAdacentMineCount(Cell cell) {
+        int numAdjacentMines = 0;
+        List<Cell> adjacentCells = GetAdjacentCells(cell);
+        foreach (Cell adjacentCell in adjacentCells) {
+            if (adjacentCell.ContainsMine) {
+                numAdjacentMines++;
+            }
+        }
+        return numAdjacentMines;
     }
 }
