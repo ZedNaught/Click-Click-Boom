@@ -1,24 +1,53 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+enum CellState { Default, Revealed, Flagged, Suspect, Detonated }
+
 public class Cell : MonoBehaviour {
-    enum CellState { Default, Revealed, Flagged, Suspect, Detonated }
-    CellState cellState;
+    CellState _cellState;
+    CellState CellState {
+        get { return _cellState; }
+        set {
+            _cellState = value;
+            if (_cellState == CellState.Detonated) {
+                spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
+            }
+            else if (_cellState == CellState.Flagged) {
+                spriteRenderer.sprite = Board.Instance.spritesDict["block_flag"];
+            }
+            else if (_cellState == CellState.Default) {
+                spriteRenderer.sprite = Board.Instance.spritesDict["block"];
+            }
+        }
+    }
     bool _containsMine;
     public bool ContainsMine {
-        get {
-            return _containsMine;
-        }
+        get { return _containsMine; }
         set {
             _containsMine = value;
 
             // use flag sprite if cell contains mine to debug placement
-            if (_containsMine) {
-                spriteRenderer.sprite = Board.Instance.spritesDict["block_flag"];
-            }
-            else {
-                spriteRenderer.sprite = Board.Instance.spritesDict["block"];
-            }
+//            if (_containsMine && CellState == CellState.Default) {
+//                CellState = CellState.Flagged;
+//            }
+//            else if (CellState == CellState.Flagged) {
+//                CellState = CellState.Default;
+//            }
+        }
+    }
+    public bool Revealed {
+        get {
+            return CellState == CellState.Revealed;
+        }
+    }
+    public bool Detonated {
+        get {
+            return CellState == CellState.Detonated;
+        }
+    }
+    public bool Flagged {
+        get {
+            return CellState == CellState.Flagged;
         }
     }
 
@@ -43,7 +72,7 @@ public class Cell : MonoBehaviour {
         get {
             bool clickable = false;
             foreach (CellState clickableState in clickableCellStates) {
-                if (cellState == clickableState) {
+                if (CellState == clickableState) {
                     clickable = true;
                     break;
                 }
@@ -54,11 +83,7 @@ public class Cell : MonoBehaviour {
 
     public int xPosition;
     public int yPosition;
-    public bool Revealed {
-        get {
-            return cellState == CellState.Revealed;
-        }
-    }
+
 
     SpriteRenderer spriteRenderer;
     Color cellUnderMouseColor = new Color(0.93f, 0.93f, 0.93f);
@@ -66,7 +91,7 @@ public class Cell : MonoBehaviour {
 
     void OnEnable() {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        cellState = CellState.Default;
+        CellState = CellState.Default;
     }
 
     void OnUnderMouse() {
@@ -86,12 +111,20 @@ public class Cell : MonoBehaviour {
             return;
         }
         if (ContainsMine) {
-            cellState = CellState.Detonated;
-            spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
+            CellState = CellState.Detonated;
         }
         else {
-            cellState = CellState.Revealed;
+            CellState = CellState.Revealed;
             spriteRenderer.sprite = Board.Instance.spritesDict["cell_" + adjacentMineCount];
+        }
+    }
+
+    public void ToggleFlag() {
+        if (CellState == CellState.Default) {
+            CellState = CellState.Flagged;
+        }
+        else if (CellState == CellState.Flagged) {
+            CellState = CellState.Default;
         }
     }
 }

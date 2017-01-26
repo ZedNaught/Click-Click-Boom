@@ -124,6 +124,15 @@ public class Board : MonoBehaviour {
             RevealCell(CellUnderMouse);
         }
 
+        if (Input.GetMouseButtonUp(1) && CellUnderMouse != null) {
+            if (!CellUnderMouse.Revealed) {
+                CellUnderMouse.ToggleFlag();
+            }
+            else {
+                RevealAdjacentUnflaggedCells(CellUnderMouse);
+            }
+        }
+
         // temporary // re-place mines on right-click
         if (Input.GetKeyUp(KeyCode.R)) {
             Debug.Log("re-placing mines due to \"R\" press");
@@ -143,7 +152,7 @@ public class Board : MonoBehaviour {
 
     void RevealCell(Cell cell) {
         cell.Reveal(GetAdjacentMineCount(cell));
-        if (cell.ContainsMine) {
+        if (cell.Detonated) {
             // TODO // handle game over
             Debug.Log("game over");
         }
@@ -195,5 +204,27 @@ public class Board : MonoBehaviour {
             }
         }
         return numAdjacentMines;
+    }
+
+    int GetAdjacentFlagCount(Cell cell) {
+        int numAdjacentFlags = 0;
+        List<Cell> adjacentCells = GetAdjacentCells(cell);
+        foreach (Cell adjacentCell in adjacentCells) {
+            if (adjacentCell.Flagged) {
+                numAdjacentFlags++;
+            }
+        }
+        return numAdjacentFlags;
+    }
+
+    void RevealAdjacentUnflaggedCells(Cell cell) {
+        Debug.Log("RevealAdjacentUnflaggedCells");
+        if (GetAdjacentMineCount(cell) == GetAdjacentFlagCount(cell)) {
+            foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
+                if (!adjacentCell.Flagged && !adjacentCell.Revealed && !adjacentCell.Detonated) {
+                    RevealCell(adjacentCell);
+                }
+            }
+        }
     }
 }
