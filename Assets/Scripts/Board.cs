@@ -4,12 +4,6 @@ using System.Collections.Generic;
 public class Board : MonoBehaviour {
     public static Board Instance;
 
-    // sprites
-    [SerializeField]
-    Texture2D spritesheet;
-    public Dictionary<string, Sprite> spritesDict;
-    Sprite[] cellSprites = new Sprite[9];
-    Sprite[] clockSprites = new Sprite[10];
     float cellSizeInUnits;
     Vector3 boardTopLeft;
 
@@ -50,13 +44,24 @@ public class Board : MonoBehaviour {
         }
     }
 
-    bool freshBoard;
 
+    bool _freshBoard;
+    bool FreshBoard {
+        get { return _freshBoard; }
+        set {
+            _freshBoard = value;
+            if (!_freshBoard) {
+                Timer.Instance.gameStartTime = Time.time;
+            }
+        }
+    }
+    public bool GameStarted {
+        get { return !FreshBoard; }
+    }
 
     void Start() {
         Instance = this;
-        freshBoard = true;
-        InitializeSprites();
+        FreshBoard = true;
         CreateBoard();
         InitializeBoard();
     }
@@ -75,24 +80,10 @@ public class Board : MonoBehaviour {
         }
     }
 
-    void InitializeSprites() {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(spritesheet.name);
-        spritesDict = new Dictionary<string, Sprite>();
-        foreach (Sprite s in sprites) {
-            spritesDict[s.name] = s;
-        }
-        for (int i = 0; i < cellSprites.Length; i++) {
-            cellSprites[i] = spritesDict["cell_" + i];
-        }
-        for (int i = 0; i < clockSprites.Length; i++) {
-            clockSprites[i] = spritesDict["clock_" + i];
-        }
-    }
-
     void CreateBoard() {
         currentDifficulty = DIFFICULTY_EXPERT;
         cells = new Cell[currentDifficulty.height, currentDifficulty.width];
-        cellSizeInUnits = cellSprites[0].rect.width / cellSprites[0].pixelsPerUnit;
+        cellSizeInUnits = Sprites.cellSprites[0].rect.width / Sprites.cellSprites[0].pixelsPerUnit;
         boardTopLeft = new Vector3(
             -(cellSizeInUnits * (currentDifficulty.width)) / 2f,
             (cellSizeInUnits * (currentDifficulty.height)) / 2f,
@@ -115,7 +106,7 @@ public class Board : MonoBehaviour {
             cell.Reset();
         }
         PlaceMines();
-        freshBoard = true;
+        FreshBoard = true;
     }
 
     void Update() {
@@ -125,11 +116,11 @@ public class Board : MonoBehaviour {
 
     void HandleInput() {
         if ((Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space)) && CellUnderMouse != null) {
-            while(freshBoard && CellUnderMouse.ContainsMine) {
+            while(FreshBoard && CellUnderMouse.ContainsMine) {
                 // while first click in game is on mine, re-place mines
                 PlaceMines();
             }
-            freshBoard = false;
+            FreshBoard = false;
 
             if (!CellUnderMouse.Revealed) {
                 RevealCell(CellUnderMouse);
@@ -150,7 +141,7 @@ public class Board : MonoBehaviour {
 
         // temporary // re-place mines on right-click
         if (Input.GetKeyUp(KeyCode.P)) {
-            if (freshBoard) {
+            if (FreshBoard) {
                 Debug.Log("re-placing mines due to \"P\" press");
                 PlaceMines();
             }
@@ -256,5 +247,9 @@ public class Board : MonoBehaviour {
                 }
             }
         }
+    }
+
+    void UpdateTimer() {
+        
     }
 }

@@ -13,25 +13,25 @@ public class Cell : MonoBehaviour {
             Sprite sprite = null;
             switch (_cellState) {
                 case CellState.Default:
-                    sprite = Board.Instance.spritesDict["block"];
+                    sprite = Sprites.spritesDict["block"];
                     break;
                 case CellState.Revealed:
                     // sprite change for this case is currently handled elsewhere
                     break;
                 case CellState.Flagged:
-                    sprite = Board.Instance.spritesDict["block_flag"];
+                    sprite = Sprites.spritesDict["block_flag"];
                     break;
                 case CellState.Suspect:
-                    sprite = Board.Instance.spritesDict["block_question"];
+                    sprite = Sprites.spritesDict["block_question"];
                     break;
                 case CellState.Detonated:
-                    sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
+                    sprite = Sprites.spritesDict["cell_bomb_detonated"];
                     break;
                 case CellState.RevealUndetonated:
-                    sprite = Board.Instance.spritesDict["cell_bomb_undetonated"];
+                    sprite = Sprites.spritesDict["cell_bomb_undetonated"];
                     break;
                 case CellState.FlaggedWrong:
-                    sprite = Board.Instance.spritesDict["cell_bomb_wrong"];
+                    sprite = Sprites.spritesDict["cell_bomb_wrong"];
                     break;
             }
             if (sprite != null) {
@@ -134,7 +134,7 @@ public class Cell : MonoBehaviour {
         }
         else {
             CellState = CellState.Revealed;
-            spriteRenderer.sprite = Board.Instance.spritesDict["cell_" + adjacentMineCount];
+            spriteRenderer.sprite = Sprites.spritesDict["cell_" + adjacentMineCount];
         }
     }
 
