@@ -50,13 +50,14 @@ public class Board : MonoBehaviour {
         }
     }
 
-    bool firstClick;
+    bool freshBoard;
 
 
     void Start() {
         Instance = this;
-        firstClick = true;
+        freshBoard = true;
         InitializeSprites();
+        CreateBoard();
         InitializeBoard();
     }
 
@@ -88,7 +89,7 @@ public class Board : MonoBehaviour {
         }
     }
 
-    void InitializeBoard() {
+    void CreateBoard() {
         currentDifficulty = DIFFICULTY_EXPERT;
         cells = new Cell[currentDifficulty.height, currentDifficulty.width];
         cellSizeInUnits = cellSprites[0].rect.width / cellSprites[0].pixelsPerUnit;
@@ -107,7 +108,14 @@ public class Board : MonoBehaviour {
                 cells[dy, dx] = cell;
             }
         }
+    }
+
+    void InitializeBoard() {
+        foreach (Cell cell in cells) {
+            cell.Reset();
+        }
         PlaceMines();
+        freshBoard = true;
     }
 
     void Update() {
@@ -116,15 +124,22 @@ public class Board : MonoBehaviour {
     }
 
     void HandleInput() {
-        if (Input.GetMouseButtonUp(0) && CellUnderMouse != null) {
-            while(firstClick && CellUnderMouse.ContainsMine) {
+        if ((Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space)) && CellUnderMouse != null) {
+            while(freshBoard && CellUnderMouse.ContainsMine) {
+                // while first click in game is on mine, re-place mines
                 PlaceMines();
             }
-            firstClick = false;
-            RevealCell(CellUnderMouse);
+            freshBoard = false;
+
+            if (!CellUnderMouse.Revealed) {
+                RevealCell(CellUnderMouse);
+            }
+            else {
+                RevealAdjacentUnflaggedCells(CellUnderMouse);
+            }
         }
 
-        if (Input.GetMouseButtonUp(1) && CellUnderMouse != null) {
+        if ((Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.F)) && CellUnderMouse != null) {
             if (!CellUnderMouse.Revealed) {
                 CellUnderMouse.ToggleFlag();
             }
@@ -134,9 +149,20 @@ public class Board : MonoBehaviour {
         }
 
         // temporary // re-place mines on right-click
+        if (Input.GetKeyUp(KeyCode.P)) {
+            if (freshBoard) {
+                Debug.Log("re-placing mines due to \"P\" press");
+                PlaceMines();
+            }
+            else {
+                Debug.Log("cannot re-place mine after game has started");
+            }
+        }
+
+        // temporary // re-place mines on right-click
         if (Input.GetKeyUp(KeyCode.R)) {
-            Debug.Log("re-placing mines due to \"R\" press");
-            PlaceMines();
+            Debug.Log("restarting game due to \"R\" press");
+            InitializeBoard();
         }
 
         // temporary // debug adjacent cells code
@@ -153,8 +179,7 @@ public class Board : MonoBehaviour {
     void RevealCell(Cell cell) {
         cell.Reveal(GetAdjacentMineCount(cell));
         if (cell.Detonated) {
-            // TODO // handle game over
-            Debug.Log("game over");
+            GameOver();
         }
         else if (GetAdjacentMineCount(cell) == 0) {
             foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
@@ -162,6 +187,12 @@ public class Board : MonoBehaviour {
                     RevealCell(adjacentCell);
                 }
             }
+        }
+    }
+
+    void GameOver() {
+        foreach (Cell cell in cells) {
+            cell.DoGameOverReveal();
         }
     }
 
@@ -218,7 +249,6 @@ public class Board : MonoBehaviour {
     }
 
     void RevealAdjacentUnflaggedCells(Cell cell) {
-        Debug.Log("RevealAdjacentUnflaggedCells");
         if (GetAdjacentMineCount(cell) == GetAdjacentFlagCount(cell)) {
             foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
                 if (!adjacentCell.Flagged && !adjacentCell.Revealed && !adjacentCell.Detonated) {

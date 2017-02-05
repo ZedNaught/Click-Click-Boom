@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-enum CellState { Default, Revealed, Flagged, Suspect, Detonated }
+enum CellState { Default, Revealed, Flagged, Suspect, Detonated, RevealUndetonated,
+                 FlaggedWrong }
 
 public class Cell : MonoBehaviour {
     CellState _cellState;
@@ -9,14 +10,32 @@ public class Cell : MonoBehaviour {
         get { return _cellState; }
         set {
             _cellState = value;
-            if (_cellState == CellState.Detonated) {
-                spriteRenderer.sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
+            Sprite sprite = null;
+            switch (_cellState) {
+                case CellState.Default:
+                    sprite = Board.Instance.spritesDict["block"];
+                    break;
+                case CellState.Revealed:
+                    // sprite change for this case is currently handled elsewhere
+                    break;
+                case CellState.Flagged:
+                    sprite = Board.Instance.spritesDict["block_flag"];
+                    break;
+                case CellState.Suspect:
+                    sprite = Board.Instance.spritesDict["block_question"];
+                    break;
+                case CellState.Detonated:
+                    sprite = Board.Instance.spritesDict["cell_bomb_detonated"];
+                    break;
+                case CellState.RevealUndetonated:
+                    sprite = Board.Instance.spritesDict["cell_bomb_undetonated"];
+                    break;
+                case CellState.FlaggedWrong:
+                    sprite = Board.Instance.spritesDict["cell_bomb_wrong"];
+                    break;
             }
-            else if (_cellState == CellState.Flagged) {
-                spriteRenderer.sprite = Board.Instance.spritesDict["block_flag"];
-            }
-            else if (_cellState == CellState.Default) {
-                spriteRenderer.sprite = Board.Instance.spritesDict["block"];
+            if (sprite != null) {
+                spriteRenderer.sprite = sprite;
             }
         }
     }
@@ -126,5 +145,18 @@ public class Cell : MonoBehaviour {
         else if (CellState == CellState.Flagged) {
             CellState = CellState.Default;
         }
+    }
+
+    public void DoGameOverReveal() {
+        if (ContainsMine && (CellState == CellState.Default || CellState == CellState.Suspect)) {
+            CellState = CellState.RevealUndetonated;
+        }
+        else if (!ContainsMine && CellState == CellState.Flagged) {
+            CellState = CellState.FlaggedWrong;
+        }
+    }
+
+    public void Reset() {
+        CellState = CellState.Default;
     }
 }
