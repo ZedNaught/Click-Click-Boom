@@ -19,10 +19,16 @@ public class Board : MonoBehaviour {
             this.mineCount = mineCount;
         }
     }
-    DifficultySpec DIFFICULTY_BEGINNER = new DifficultySpec(8, 8, 10);
-    DifficultySpec DIFFICULTY_INTERMEDIATE = new DifficultySpec(16, 16, 40);
-    DifficultySpec DIFFICULTY_EXPERT = new DifficultySpec(30, 16, 99);
+    static DifficultySpec DIFFICULTY_BEGINNER = new DifficultySpec(8, 8, 10);
+    static DifficultySpec DIFFICULTY_INTERMEDIATE = new DifficultySpec(16, 16, 40);
+    static DifficultySpec DIFFICULTY_EXPERT = new DifficultySpec(30, 16, 99);
     DifficultySpec currentDifficulty;
+    public enum Difficulty { Beginner, Intermediate, Expert };
+    Dictionary<Difficulty, DifficultySpec> difficultyMap = new Dictionary<Difficulty, DifficultySpec>() {
+        {Difficulty.Beginner, DIFFICULTY_BEGINNER},
+        {Difficulty.Intermediate, DIFFICULTY_INTERMEDIATE},
+        {Difficulty.Expert, DIFFICULTY_EXPERT},
+    };
 
     // game objects
     [SerializeField]
@@ -81,7 +87,8 @@ public class Board : MonoBehaviour {
     }
 
     void CreateBoard() {
-        currentDifficulty = DIFFICULTY_BEGINNER;
+        Difficulty difficultyEnum = (Difficulty)PlayerPrefs.GetInt("DifficultyEnum", (int)Difficulty.Beginner);
+        currentDifficulty = difficultyMap[difficultyEnum];
         cells = new Cell[currentDifficulty.height, currentDifficulty.width];
         cellSizeInUnits = Sprites.cellSprites[0].rect.width / Sprites.cellSprites[0].pixelsPerUnit;
         boardTopLeft = new Vector3(
