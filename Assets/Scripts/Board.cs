@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class Board : MonoBehaviour {
     public static Board Instance;
+    bool gameOver;
 
     float cellSizeInUnits;
     Vector3 boardTopLeft;
@@ -67,7 +68,6 @@ public class Board : MonoBehaviour {
 
     void Start() {
         Instance = this;
-        FreshBoard = true;
         CreateBoard();
         InitializeBoard();
     }
@@ -114,6 +114,7 @@ public class Board : MonoBehaviour {
         }
         PlaceMines();
         FreshBoard = true;
+        gameOver = false;
     }
 
     void Update() {
@@ -122,7 +123,7 @@ public class Board : MonoBehaviour {
     }
 
     void HandleInput() {
-        if (CellUnderMouse != null) {
+        if (!gameOver && CellUnderMouse != null) {
             // unrevealed cell
             if (!CellUnderMouse.Revealed) {
                 // reveal cell
@@ -172,7 +173,7 @@ public class Board : MonoBehaviour {
     void RevealCell(Cell cell) {
         cell.Reveal(GetAdjacentMineCount(cell));
         if (cell.Detonated) {
-            GameOver();
+            DoGameOver();
         }
         else if (GetAdjacentMineCount(cell) == 0) {
             foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
@@ -183,7 +184,8 @@ public class Board : MonoBehaviour {
         }
     }
 
-    void GameOver() {
+    void DoGameOver() {
+        gameOver = true;
         foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }
