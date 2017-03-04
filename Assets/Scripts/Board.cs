@@ -19,8 +19,8 @@ public class Board : MonoBehaviour {
             this.mineCount = mineCount;
         }
     }
-//    DifficultySpec DIFFICULTY_BEGINNER = new DifficultySpec(8, 8, 10);
-//    DifficultySpec DIFFICULTY_INTERMEDIATE = new DifficultySpec(16, 16, 40);
+    DifficultySpec DIFFICULTY_BEGINNER = new DifficultySpec(8, 8, 10);
+    DifficultySpec DIFFICULTY_INTERMEDIATE = new DifficultySpec(16, 16, 40);
     DifficultySpec DIFFICULTY_EXPERT = new DifficultySpec(30, 16, 99);
     DifficultySpec currentDifficulty;
 
@@ -81,7 +81,7 @@ public class Board : MonoBehaviour {
     }
 
     void CreateBoard() {
-        currentDifficulty = DIFFICULTY_EXPERT;
+        currentDifficulty = DIFFICULTY_BEGINNER;
         cells = new Cell[currentDifficulty.height, currentDifficulty.width];
         cellSizeInUnits = Sprites.cellSprites[0].rect.width / Sprites.cellSprites[0].pixelsPerUnit;
         boardTopLeft = new Vector3(
@@ -115,56 +115,51 @@ public class Board : MonoBehaviour {
     }
 
     void HandleInput() {
-        if ((Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space)) && CellUnderMouse != null) {
-            while(FreshBoard && CellUnderMouse.ContainsMine) {
-                // while first click in game is on mine, re-place mines
-                PlaceMines();
-            }
-            FreshBoard = false;
-
+        if (CellUnderMouse != null) {
+            // unrevealed cell
             if (!CellUnderMouse.Revealed) {
-                RevealCell(CellUnderMouse);
+                // reveal cell
+                if ((Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space))) {
+                    while(FreshBoard && CellUnderMouse.ContainsMine) {
+                        // while first click in game is on mine, re-place mines
+                        PlaceMines();
+                    }
+                    FreshBoard = false;
+                    RevealCell(CellUnderMouse);
+                }
+
+                // flag cell
+                if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.F)) && CellUnderMouse != null) {
+                    CellUnderMouse.ToggleFlag();
+                }
             }
+
+            // revealed cell
             else {
-                RevealAdjacentUnflaggedCells(CellUnderMouse);
+                // reveal adjacent cells
+                if ((Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.Space))) {
+                    RevealAdjacentUnflaggedCells(CellUnderMouse);
+                }
             }
         }
 
-        if ((Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.F)) && CellUnderMouse != null) {
-            if (!CellUnderMouse.Revealed) {
-                CellUnderMouse.ToggleFlag();
-            }
-            else {
-                RevealAdjacentUnflaggedCells(CellUnderMouse);
-            }
-        }
-
-        // temporary // re-place mines on right-click
-        if (Input.GetKeyUp(KeyCode.P)) {
-            if (FreshBoard) {
-                Debug.Log("re-placing mines due to \"P\" press");
-                PlaceMines();
-            }
-            else {
-                Debug.Log("cannot re-place mine after game has started");
-            }
-        }
-
-        // temporary // re-place mines on right-click
+        // restart with R key
         if (Input.GetKeyUp(KeyCode.R)) {
             Debug.Log("restarting game due to \"R\" press");
             InitializeBoard();
         }
 
-        // temporary // debug adjacent cells code
-        if (Input.GetKeyUp(KeyCode.A) && CellUnderMouse != null) {
-            List<Cell> adjacentCells = GetAdjacentCells(CellUnderMouse);
-            foreach (Cell cell in adjacentCells) {
-                cell.Highlight();
+        if (Config.ENABLE_DEBUG_COMMANDS) {
+            if (Input.GetKeyUp(KeyCode.P)) {
+                if (FreshBoard) {
+                    Debug.Log("re-placing mines due to \"P\" press");
+                    PlaceMines();
+                }
+                else {
+                    Debug.Log("cannot re-place mines after game has started");
+                }
             }
-            Debug.Log("highlighted " + adjacentCells.Count + " adjacent mines due to \"A\" press");
         }
-
     }
 
     void RevealCell(Cell cell) {
