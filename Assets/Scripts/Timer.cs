@@ -8,7 +8,7 @@ public class Timer : MonoBehaviour {
     GameObject digitPrefab;
 
     public float gameStartTime;
-    float GameTime {
+    public float GameTime {
         get {
             if (!Board.Instance.GameStarted) {
                 return 0f;

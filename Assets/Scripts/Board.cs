@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class Board : MonoBehaviour {
     public static Board Instance;
     bool gameOver;
+    int revealedCells;
 
     float cellSizeInUnits;
     Vector3 boardTopLeft;
@@ -14,11 +15,15 @@ public class Board : MonoBehaviour {
         public int width;
         public int height;
         public int mineCount;
+        public int totalCells;
+        public int emptyCells;
 
         public DifficultySpec(int width, int height, int mineCount) {
             this.width = width;
             this.height = height;
             this.mineCount = mineCount;
+            this.totalCells = width * height;
+            this.emptyCells = this.totalCells - mineCount;
         }
     }
     static DifficultySpec DIFFICULTY_BEGINNER = new DifficultySpec(8, 8, 10);
@@ -116,6 +121,7 @@ public class Board : MonoBehaviour {
         PlaceMines();
         FreshBoard = true;
         gameOver = false;
+        revealedCells = 0;
     }
 
     void Update() {
@@ -199,11 +205,15 @@ public class Board : MonoBehaviour {
                 }
             }
         }
-
+        revealedCells++;
+        CheckIfGameWon();
     }
 
     void CheckIfGameWon() {
-        //
+        if (revealedCells == currentDifficulty.emptyCells) {
+            Debug.Log(string.Format("You win! Time: {0:0.00} seconds.", Timer.Instance.GameTime));
+            DoGameOver();
+        }
     }
 
     void DoGameOver() {
