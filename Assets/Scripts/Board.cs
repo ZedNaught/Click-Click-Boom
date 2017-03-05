@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class Board : MonoBehaviour {
     public static Board Instance;
@@ -125,17 +126,27 @@ public class Board : MonoBehaviour {
     void HandleInput() {
         if (!gameOver && CellUnderMouse != null) {
             // unrevealed cell
-            if (!CellUnderMouse.Revealed) {
+            if (CellUnderMouse.Clickable) {
                 // reveal cell
-                if ((Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space))) {
-                    while(FreshBoard && CellUnderMouse.ContainsMine) {
-                        // while first click in game is on mine, re-place mines
-                        PlaceMines();
+                if (!CellUnderMouse.Flagged && (Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space))) {
+                    if (FreshBoard) {
+                        while(FreshBoard && CellUnderMouse.ContainsMine) {
+                            // while first click in game is on mine, re-place mines
+                            PlaceMines();
+                        }
+                        FreshBoard = false;
                     }
-                    FreshBoard = false;
+
                     RevealCell(CellUnderMouse);
                 }
 
+                // flag cell
+                if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.F)) && CellUnderMouse != null) {
+                    CellUnderMouse.ToggleFlag();
+                }
+            }
+
+            else if (CellUnderMouse.Flagged) {
                 // flag cell
                 if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.F)) && CellUnderMouse != null) {
                     CellUnderMouse.ToggleFlag();
@@ -146,7 +157,7 @@ public class Board : MonoBehaviour {
             else {
                 // reveal adjacent cells
                 if ((Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.Space))) {
-                    RevealAdjacentUnflaggedCells(CellUnderMouse);
+                      RevealAdjacentUnflaggedCells(CellUnderMouse);
                 }
             }
         }
@@ -155,6 +166,11 @@ public class Board : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.R)) {
             Debug.Log("restarting game due to \"R\" press");
             InitializeBoard();
+        }
+
+        // exit to main menu with M key
+        if (Input.GetKeyUp(KeyCode.M)) {
+            SceneManager.LoadSceneAsync("Menu");
         }
 
         if (Config.ENABLE_DEBUG_COMMANDS) {
@@ -174,6 +190,7 @@ public class Board : MonoBehaviour {
         cell.Reveal(GetAdjacentMineCount(cell));
         if (cell.Detonated) {
             DoGameOver();
+            return;
         }
         else if (GetAdjacentMineCount(cell) == 0) {
             foreach (Cell adjacentCell in GetAdjacentCells(cell)) {
@@ -182,6 +199,11 @@ public class Board : MonoBehaviour {
                 }
             }
         }
+
+    }
+
+    void CheckIfGameWon() {
+        //
     }
 
     void DoGameOver() {

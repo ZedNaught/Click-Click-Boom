@@ -89,14 +89,12 @@ public class Cell : MonoBehaviour {
     static CellState[] clickableCellStates = { CellState.Default, CellState.Suspect };
     public bool Clickable {
         get {
-            bool clickable = false;
             foreach (CellState clickableState in clickableCellStates) {
                 if (CellState == clickableState) {
-                    clickable = true;
-                    break;
+                    return true;
                 }
             }
-            return clickable;
+            return false;
         }
     }
 
