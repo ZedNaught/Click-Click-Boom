@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-//enum CellState { Default, Revealed, Flagged, Suspect, Detonated, RevealUndetonated,
-//                 FlaggedWrong }
+enum CellState { Default, Revealed, Flagged, Suspect, Detonated, RevealUndetonated,
+                 FlaggedWrong }
 
-public class Cell : MonoBehaviour {
+public class CellUI : MonoBehaviour {
     CellState _cellState;
     CellState CellState {
         get { return _cellState; }
