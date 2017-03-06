@@ -21,7 +21,7 @@ public class Timer : MonoBehaviour {
 
     void Start() {
         Instance = this;
-//        InitializeDigits();
+        InitializeDigits();
     }
 
     void InitializeDigits() {
