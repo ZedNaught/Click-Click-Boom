@@ -42,6 +42,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xPosition: 0
   yPosition: 0
+  board: {fileID: 0}
 --- !u!114 &114548422369910844
 MonoBehaviour:
   m_ObjectHideFlags: 1

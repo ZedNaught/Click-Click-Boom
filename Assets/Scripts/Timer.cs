@@ -25,7 +25,6 @@ public class Timer : MonoBehaviour {
     }
 
     void InitializeDigits() {
-        Debug.Log("Timer InitializeSprites()");
         Sprite zeroSprite = Sprites.clockSprites[0];
         float digitWidthInUnits = zeroSprite.rect.width / zeroSprite.pixelsPerUnit;
         for (int i = 0; i < sprites.Length; i++) {

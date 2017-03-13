@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using System.Collections;
 
 enum CellState { Default, Revealed, Flagged, Suspect, Detonated, RevealUndetonated,
                  FlaggedWrong }
 
-public class CellUI : MonoBehaviour {
+public class CellUI : MonoBehaviour,
+                      IPointerEnterHandler,
+                      IPointerExitHandler,
+                      IPointerClickHandler {
     CellState _cellState;
     CellState CellState {
         get { return _cellState; }
@@ -35,7 +40,7 @@ public class CellUI : MonoBehaviour {
                     break;
             }
             if (sprite != null) {
-                spriteRenderer.sprite = sprite;
+                image.sprite = sprite;
             }
         }
     }
@@ -71,21 +76,21 @@ public class CellUI : MonoBehaviour {
     }
 
     // interactability
-    bool _underMouse;
-    public bool UnderMouse {
-        get {
-            return _underMouse;
-        }
-        set {
-            if (_underMouse && !value) {
-                OffUnderMouse();
-            }
-            if (value) {
-                OnUnderMouse();
-            }
-            _underMouse = value;
-        }
-    }
+//    bool _underMouse;
+//    public bool UnderMouse {
+//        get {
+//            return _underMouse;
+//        }
+//        set {
+//            if (_underMouse && !value) {
+//                OffUnderMouse();
+//            }
+//            if (value) {
+//                OnUnderMouse();
+//            }
+//            _underMouse = value;
+//        }
+//    }
     static CellState[] clickableCellStates = { CellState.Default, CellState.Suspect };
     public bool Clickable {
         get {
@@ -101,42 +106,88 @@ public class CellUI : MonoBehaviour {
     public int xPosition;
     public int yPosition;
 
-
-    SpriteRenderer spriteRenderer;
+    Image image;
     Color cellUnderMouseColor = new Color(0.93f, 0.93f, 0.93f);
+    bool underMouse = false;
+    public BoardUI board;
+    public int adjacentMineCount;
 
 
     void OnEnable() {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        CellState = CellState.Default;
+//        spriteRenderer = GetComponent<SpriteRenderer>();
+//        CellState = CellState.Default;
+        image = GetComponent<Image>();
     }
 
-    void OnUnderMouse() {
-        spriteRenderer.color = cellUnderMouseColor;
+    void Update() {
+        HandleInput();
     }
 
-    void OffUnderMouse() {
-        spriteRenderer.color = Color.white;
-    }
-
-    public void Highlight() {
-        spriteRenderer.color = Color.yellow;
-    }
-
-    public void Reveal(int adjacentMineCount) {
-        if (!Clickable) {
+    void HandleInput() {
+        if (!underMouse || GameManager.Instance.gameOver) {
             return;
         }
+
+        if (Input.GetKeyDown(KeyCode.F)) {
+            ToggleFlag();
+        }
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            Click();
+        }
+
+        // revealed cell
+//        else {
+//            // reveal adjacent cells
+//            if ((Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.Space))) {
+//                  board.RevealAdjacentUnflaggedCells(this);
+//            }
+//        }
+    }
+
+//    public void Highlight() {
+//        spriteRenderer.color = Color.yellow;
+//    }
+
+    public void Click() {
+        if (Clickable) {
+            Reveal();
+        }
+        else if (Revealed) {
+            board.RevealAdjacentUnflaggedCells(this);
+        }
+    }
+
+    public void Reveal() {
+        if (GameManager.Instance.gameOver) {
+            return;
+        }
+
+        if (board.FreshBoard) {
+            while(board.FreshBoard && ContainsMine) {
+                // while first click in game is on mine, re-place mines
+                board.PlaceMines();
+            }
+            board.FreshBoard = false;
+        }
+
         if (ContainsMine) {
             CellState = CellState.Detonated;
+            board.DoGameOver();
         }
         else {
             CellState = CellState.Revealed;
-            spriteRenderer.sprite = Sprites.spritesDict["cell_" + adjacentMineCount];
+            image.sprite = Sprites.spritesDict["cell_" + adjacentMineCount];
+            if (adjacentMineCount == 0) {
+                board.RevealAdjacentUnflaggedCells(this);
+            }
         }
     }
 
     public void ToggleFlag() {
+        if (GameManager.Instance.gameOver || Revealed) {
+            return;
+        }
+
         if (CellState == CellState.Default) {
             CellState = CellState.Flagged;
         }
@@ -156,5 +207,28 @@ public class CellUI : MonoBehaviour {
 
     public void Reset() {
         CellState = CellState.Default;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData) {
+        underMouse = true;
+        image.color = cellUnderMouseColor;
+    }
+
+    public void OnPointerExit(PointerEventData eventData) {
+        underMouse = false;
+        image.color = Color.white;
+    }
+
+    public void OnPointerClick(PointerEventData eventData) {
+        if (GameManager.Instance.gameOver) {
+            return;
+        }
+
+        if (eventData.button == PointerEventData.InputButton.Left) {
+            Click();
+        }
+        else if (eventData.button == PointerEventData.InputButton.Right) {
+            ToggleFlag();
+        }
     }
 }

@@ -10,12 +10,10 @@ public class Sprites : MonoBehaviour {
     public static Sprite[] clockSprites = new Sprite[10];
 
     void Awake() {
-        Debug.Log("Sprites.Awake()");
         InitializeSprites();
     }
 
     void InitializeSprites() {
-        Debug.Log("Sprites.InitializeSprites()");
         Sprite[] sprites = Resources.LoadAll<Sprite>("minesweeper_spritesheet");
         spritesDict = new Dictionary<string, Sprite>();
         foreach (Sprite s in sprites) {
