@@ -79,6 +79,7 @@ public class BoardUI : MonoBehaviour {
         Instance = this;
         CreateBoard();
         InitializeBoard();
+        Timer.Instance.StartTimer();
     }
 
     public void PlaceMines() {
@@ -109,7 +110,10 @@ public class BoardUI : MonoBehaviour {
 //            (cellSizeInUnits * (currentDifficulty.height)) / 2f,
 //            0f
 //        );
-        cellContainer.sizeDelta = new Vector2(currentDifficulty.width * 16, currentDifficulty.height * 16);
+        Vector2 cellContainerSize = new Vector2(currentDifficulty.width * 16, currentDifficulty.height * 16);
+        cellContainer.sizeDelta = cellContainerSize;
+        Vector2 boardSize = new Vector2(32, 64) + cellContainerSize;
+        ((RectTransform)transform).sizeDelta = boardSize;
         GridLayoutGroup layoutGroup = cellContainer.GetComponent<GridLayoutGroup>();
         layoutGroup.constraintCount = currentDifficulty.width;
 

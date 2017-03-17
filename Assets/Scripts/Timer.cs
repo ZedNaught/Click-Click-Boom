@@ -1,34 +1,45 @@
 ﻿//using System.Collections;
 //using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Timer : MonoBehaviour {
     public static Timer Instance;
-    [SerializeField]
-    GameObject digitPrefab;
 
     public float gameStartTime;
     public float GameTime {
         get {
-            if (!Board.Instance.GameStarted) {
-                return 0f;
-            }
             return Time.time - gameStartTime;
         }
     }
 
-    Sprite[] sprites = new Sprite[3];
+    [SerializeField]
+    RectTransform[] digits = new RectTransform[3];
+    int hundreds, tens, ones;
+    bool started = false;
 
     void Start() {
         Instance = this;
-        InitializeDigits();
     }
 
-    void InitializeDigits() {
-        Sprite zeroSprite = Sprites.clockSprites[0];
-        float digitWidthInUnits = zeroSprite.rect.width / zeroSprite.pixelsPerUnit;
-        for (int i = 0; i < sprites.Length; i++) {
-            sprites[i] = ((GameObject) Instantiate(digitPrefab, Vector3.zero, Quaternion.identity, transform)).GetComponent<Sprite>();
+    public void StartTimer() {
+        started = true;
+        gameStartTime = Time.time;
+    }
+
+    void Update() {
+        if (!started) {
+            return;
         }
+        int time = (int)GameTime;
+        if (time == ones % 10) {
+            return;
+        }
+        hundreds = (time / 100) % 10;
+        tens = (time / 10) % 10;
+        ones = time % 10;
+        digits[0].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + hundreds];
+        digits[1].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + tens];
+        digits[2].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + ones];
     }
 }
