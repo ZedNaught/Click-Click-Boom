@@ -5,13 +5,9 @@ using UnityEngine.UI;
 
 public class BoardUI : MonoBehaviour {
     public static BoardUI Instance;
-//    bool gameOver;
-    int revealedCells;
+    public int revealedCells;
     [SerializeField]
     RectTransform[] mineCountDigits = new RectTransform[3];
-
-//    float cellSizeInUnits;
-//    Vector3 boardTopLeft;
 
     // difficulty
     struct DifficultySpec {
@@ -48,22 +44,6 @@ public class BoardUI : MonoBehaviour {
     CellUI[,] cells;
     [SerializeField]
     public Image faceButtonImage;
-//    Cell _cellUnderMouse;
-//    Cell CellUnderMouse {
-//        get {
-//           return _cellUnderMouse;
-//        }
-//        set {
-//            if (_cellUnderMouse != null) {
-//                _cellUnderMouse.UnderMouse = false;
-//            }
-//            if (value != null) {
-//                value.UnderMouse = true;
-//            }
-//            _cellUnderMouse = value;
-//        }
-//    }
-
 
     bool _freshBoard;
     public bool FreshBoard {
@@ -112,12 +92,7 @@ public class BoardUI : MonoBehaviour {
         Difficulty difficultyEnum = (Difficulty)PlayerPrefs.GetInt("DifficultyEnum", (int)Difficulty.Expert);
         currentDifficulty = difficultyMap[difficultyEnum];
         cells = new CellUI[currentDifficulty.height, currentDifficulty.width];
-//        cellSizeInUnits = Sprites.cellSprites[0].rect.width / Sprites.cellSprites[0].pixelsPerUnit;
-//        boardTopLeft = new Vector3(
-//            -(cellSizeInUnits * (currentDifficulty.width)) / 2f,
-//            (cellSizeInUnits * (currentDifficulty.height)) / 2f,
-//            0f
-//        );
+
         Vector2 cellContainerSize = new Vector2(currentDifficulty.width * 16, currentDifficulty.height * 16);
         cellContainer.sizeDelta = cellContainerSize;
         Vector2 boardSize = new Vector2(32, 64) + cellContainerSize;
@@ -131,8 +106,6 @@ public class BoardUI : MonoBehaviour {
 
         for (int dy = 0; dy < currentDifficulty.height; dy++) {
             for (int dx = 0; dx < currentDifficulty.width; dx++) {
-//                Vector3 cellPosition = boardTopLeft + (dx + 0.5f) * cellSizeInUnits * Vector3.right + (dy + 0.5f) * cellSizeInUnits * Vector3.down;
-
                 CellUI cell = ((GameObject) Instantiate(cellPrefab, cellContainer)).GetComponent<CellUI>();
                 cell.board = this;
                 cell.transform.localScale = Vector3.one;
@@ -161,7 +134,6 @@ public class BoardUI : MonoBehaviour {
     }
 
     void Update() {
-//        SetCellUnderMouse();
         HandleInput();
     }
 
@@ -169,43 +141,6 @@ public class BoardUI : MonoBehaviour {
         if (!GameManager.Instance.gameOver && Input.GetMouseButtonUp(0)) {
             faceButtonImage.sprite = Sprites.spritesDict["face_smile"];
         }
-//        if (!gameOver && CellUnderMouse != null) {
-//            // unrevealed cell
-//            if (CellUnderMouse.Clickable) {
-//                // reveal cell
-//                if (!CellUnderMouse.Flagged && (Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.Space))) {
-//                    if (FreshBoard) {
-//                        while(FreshBoard && CellUnderMouse.ContainsMine) {
-//                            // while first click in game is on mine, re-place mines
-//                            PlaceMines();
-//                        }
-//                        FreshBoard = false;
-//                    }
-//
-//                    RevealCell(CellUnderMouse);
-//                }
-//
-//                // flag cell
-//                if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.F)) && CellUnderMouse != null) {
-//                    CellUnderMouse.ToggleFlag();
-//                }
-//            }
-//
-//            else if (CellUnderMouse.Flagged) {
-//                // flag cell
-//                if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.F)) && CellUnderMouse != null) {
-//                    CellUnderMouse.ToggleFlag();
-//                }
-//            }
-//
-//            // revealed cell
-//            else {
-//                // reveal adjacent cells
-//                if ((Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.Space))) {
-//                      RevealAdjacentUnflaggedCells(CellUnderMouse);
-//                }
-//            }
-//        }
 
         // restart with R key
         if (Input.GetKeyUp(KeyCode.R)) {
@@ -231,27 +166,10 @@ public class BoardUI : MonoBehaviour {
         }
     }
 
-    void RevealCell(CellUI cell) {
-        cell.Reveal();
-        if (cell.Detonated) {
-            DoGameOver();
-            return;
-        }
-        else if (GetAdjacentMineCount(cell) == 0) {
-            foreach (CellUI adjacentCell in GetAdjacentCells(cell)) {
-                if (!adjacentCell.Revealed) {
-                    RevealCell(adjacentCell);
-                }
-            }
-        }
-        revealedCells++;
-        CheckIfGameWon();
-    }
-
-    void CheckIfGameWon() {
+    public void CheckIfGameWon() {
+        Debug.Log("checking if game won");
         if (revealedCells == currentDifficulty.emptyCells) {
-            Debug.Log(string.Format("You win! Time: {0:0.00} seconds.", Timer.Instance.GameTime));
-            DoGameOver();
+            DoGameVictory();
         }
     }
 
@@ -265,7 +183,13 @@ public class BoardUI : MonoBehaviour {
     }
 
     void DoGameVictory() {
-        // TODO //
+        Debug.Log(string.Format("You win! Time: {0:0.00} seconds.", Timer.Instance.GameTime));
+        GameManager.Instance.gameOver = true;
+        Timer.Instance.StopTimer();
+        foreach (CellUI cell in cells) {
+            cell.DoGameOverReveal();
+        }
+        faceButtonImage.sprite = Sprites.spritesDict["face_cool"];
     }
 
     public void UpdateMineCount() {
@@ -278,19 +202,6 @@ public class BoardUI : MonoBehaviour {
         mineCountDigits[1].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + tens];
         mineCountDigits[2].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + ones];
     }
-
-//    void SetCellUnderMouse() {
-//        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-//        Vector3 mouseDeltaScaled = (mousePosition - boardTopLeft) / cellSizeInUnits;
-//        int cellX = (int) Mathf.Floor(mouseDeltaScaled.x);
-//        int cellY = (int) Mathf.Floor(-mouseDeltaScaled.y);
-//        if (cellX >= 0 && cellX < currentDifficulty.width && cellY >= 0 && cellY < currentDifficulty.height) {
-//            CellUnderMouse = cells[cellY, cellX];
-//        }
-//        else {
-//            CellUnderMouse = null;
-//        }
-//    }
 
     List<CellUI> GetAdjacentCells(CellUI centerCell, bool skipFlagged = false) {
         // TODO // could probably be optimized

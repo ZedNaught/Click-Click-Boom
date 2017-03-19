@@ -50,14 +50,6 @@ public class CellUI : MonoBehaviour,
         get { return _containsMine; }
         set {
             _containsMine = value;
-
-            // use flag sprite if cell contains mine to debug placement
-//            if (_containsMine && CellState == CellState.Default) {
-//                CellState = CellState.Flagged;
-//            }
-//            else if (CellState == CellState.Flagged) {
-//                CellState = CellState.Default;
-//            }
         }
     }
     public bool Revealed {
@@ -77,21 +69,6 @@ public class CellUI : MonoBehaviour,
     }
 
     // interactability
-//    bool _underMouse;
-//    public bool UnderMouse {
-//        get {
-//            return _underMouse;
-//        }
-//        set {
-//            if (_underMouse && !value) {
-//                OffUnderMouse();
-//            }
-//            if (value) {
-//                OnUnderMouse();
-//            }
-//            _underMouse = value;
-//        }
-//    }
     static CellState[] clickableCellStates = { CellState.Default, CellState.Suspect };
     public bool Clickable {
         get {
@@ -115,8 +92,6 @@ public class CellUI : MonoBehaviour,
 
 
     void OnEnable() {
-//        spriteRenderer = GetComponent<SpriteRenderer>();
-//        CellState = CellState.Default;
         image = GetComponent<Image>();
     }
 
@@ -135,19 +110,7 @@ public class CellUI : MonoBehaviour,
         if (Input.GetKeyDown(KeyCode.Space)) {
             Click();
         }
-
-        // revealed cell
-//        else {
-//            // reveal adjacent cells
-//            if ((Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1) || Input.GetKeyUp(KeyCode.Space))) {
-//                  board.RevealAdjacentUnflaggedCells(this);
-//            }
-//        }
     }
-
-//    public void Highlight() {
-//        spriteRenderer.color = Color.yellow;
-//    }
 
     public void Click() {
         if (Clickable) {
@@ -156,6 +119,7 @@ public class CellUI : MonoBehaviour,
         else if (Revealed) {
             board.RevealAdjacentUnflaggedCells(this);
         }
+        BoardUI.Instance.CheckIfGameWon();
     }
 
     public void Reveal() {
@@ -177,6 +141,7 @@ public class CellUI : MonoBehaviour,
         }
         else {
             CellState = CellState.Revealed;
+            BoardUI.Instance.revealedCells++;
             image.sprite = Sprites.spritesDict["cell_" + adjacentMineCount];
             if (adjacentMineCount == 0) {
                 board.RevealAdjacentUnflaggedCells(this);

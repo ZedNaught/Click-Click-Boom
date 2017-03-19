@@ -1082,6 +1082,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b1c4c1afeed475da58ae7a591102be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  revealedCells: 0
   mineCountDigits:
   - {fileID: 228289939}
   - {fileID: 209736441}
@@ -9242,7 +9243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
