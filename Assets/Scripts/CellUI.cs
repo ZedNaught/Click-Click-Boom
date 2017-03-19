@@ -9,7 +9,8 @@ enum CellState { Default, Revealed, Flagged, Suspect, Detonated, RevealUndetonat
 public class CellUI : MonoBehaviour,
                       IPointerEnterHandler,
                       IPointerExitHandler,
-                      IPointerClickHandler {
+                      IPointerClickHandler,
+                      IPointerDownHandler {
     CellState _cellState;
     CellState CellState {
         get { return _cellState; }
@@ -194,6 +195,7 @@ public class CellUI : MonoBehaviour,
         else if (CellState == CellState.Flagged) {
             CellState = CellState.Default;
         }
+        BoardUI.Instance.UpdateMineCount();
     }
 
     public void DoGameOverReveal() {
@@ -229,6 +231,16 @@ public class CellUI : MonoBehaviour,
         }
         else if (eventData.button == PointerEventData.InputButton.Right) {
             ToggleFlag();
+        }
+    }
+
+    public void OnPointerDown(PointerEventData eventData) {
+        if (GameManager.Instance.gameOver) {
+            return;
+        }
+
+        if (Clickable && eventData.button == PointerEventData.InputButton.Left) {
+            BoardUI.Instance.faceButtonImage.sprite = Sprites.spritesDict["face_scared"];
         }
     }
 }

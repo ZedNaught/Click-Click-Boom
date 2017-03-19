@@ -7,6 +7,8 @@ public class BoardUI : MonoBehaviour {
     public static BoardUI Instance;
 //    bool gameOver;
     int revealedCells;
+    [SerializeField]
+    RectTransform[] mineCountDigits = new RectTransform[3];
 
 //    float cellSizeInUnits;
 //    Vector3 boardTopLeft;
@@ -44,6 +46,8 @@ public class BoardUI : MonoBehaviour {
     [SerializeField]
     RectTransform cellContainer;
     CellUI[,] cells;
+    [SerializeField]
+    public Image faceButtonImage;
 //    Cell _cellUnderMouse;
 //    Cell CellUnderMouse {
 //        get {
@@ -67,7 +71,11 @@ public class BoardUI : MonoBehaviour {
         set {
             _freshBoard = value;
             if (!_freshBoard) {
-                Timer.Instance.gameStartTime = Time.time;
+                Timer.Instance.StartTimer();
+            }
+            else {
+                Timer.Instance.ResetTimer();
+                faceButtonImage.sprite = Sprites.spritesDict["face_smile"];
             }
         }
     }
@@ -79,7 +87,7 @@ public class BoardUI : MonoBehaviour {
         Instance = this;
         CreateBoard();
         InitializeBoard();
-        Timer.Instance.StartTimer();
+        UpdateMineCount();
     }
 
     public void PlaceMines() {
@@ -144,6 +152,12 @@ public class BoardUI : MonoBehaviour {
         FreshBoard = true;
         GameManager.Instance.gameOver = false;
         revealedCells = 0;
+        UpdateMineCount();
+    }
+
+    public void RestartGame() {
+        Timer.Instance.StopTimer();
+        InitializeBoard();
     }
 
     void Update() {
@@ -152,6 +166,9 @@ public class BoardUI : MonoBehaviour {
     }
 
     void HandleInput() {
+        if (!GameManager.Instance.gameOver && Input.GetMouseButtonUp(0)) {
+            faceButtonImage.sprite = Sprites.spritesDict["face_smile"];
+        }
 //        if (!gameOver && CellUnderMouse != null) {
 //            // unrevealed cell
 //            if (CellUnderMouse.Clickable) {
@@ -193,7 +210,7 @@ public class BoardUI : MonoBehaviour {
         // restart with R key
         if (Input.GetKeyUp(KeyCode.R)) {
             Debug.Log("restarting game due to \"R\" press");
-            InitializeBoard();
+            RestartGame();
         }
 
         // exit to main menu with M key
@@ -240,9 +257,26 @@ public class BoardUI : MonoBehaviour {
 
     public void DoGameOver() {
         GameManager.Instance.gameOver = true;
+        Timer.Instance.StopTimer();
         foreach (CellUI cell in cells) {
             cell.DoGameOverReveal();
         }
+        faceButtonImage.sprite = Sprites.spritesDict["face_dead"];
+    }
+
+    void DoGameVictory() {
+        // TODO //
+    }
+
+    public void UpdateMineCount() {
+        int mineCount = currentDifficulty.mineCount - GetFlagCount();
+        mineCount = Mathf.Max(0, mineCount);
+        int hundreds = (mineCount / 100) % 10;
+        int tens = (mineCount / 10) % 10;
+        int ones = mineCount % 10;
+        mineCountDigits[0].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + hundreds];
+        mineCountDigits[1].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + tens];
+        mineCountDigits[2].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + ones];
     }
 
 //    void SetCellUnderMouse() {
@@ -318,6 +352,16 @@ public class BoardUI : MonoBehaviour {
                 }
             }
         }
+    }
+
+    int GetFlagCount() {
+        int count = 0;
+        foreach (CellUI cell in cells) {
+            if (cell.Flagged) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     void UpdateTimer() {
