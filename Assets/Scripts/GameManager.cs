@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 //using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
@@ -7,5 +8,10 @@ public class GameManager : MonoBehaviour {
 
     void Start() {
         Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    public void GoToMenu() {
+        SceneManager.LoadSceneAsync("Menu");
     }
 }

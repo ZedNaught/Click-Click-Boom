@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BoardUI : MonoBehaviour {
@@ -150,7 +149,7 @@ public class BoardUI : MonoBehaviour {
 
         // exit to main menu with M key
         if (Input.GetKeyUp(KeyCode.M)) {
-            SceneManager.LoadSceneAsync("Menu");
+            GameManager.Instance.GoToMenu();
         }
 
         if (Config.ENABLE_DEBUG_COMMANDS) {
