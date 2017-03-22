@@ -4,16 +4,16 @@ using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour {
     public void StartGame(string difficulty) {
-        Board.Difficulty difficultyEnum;
+        BoardUI.Difficulty difficultyEnum;
         switch (difficulty) {
             case "beginner":
-                difficultyEnum = Board.Difficulty.Beginner;
+                difficultyEnum = BoardUI.Difficulty.Beginner;
                 break;
             case "intermediate":
-                difficultyEnum = Board.Difficulty.Intermediate;
+                difficultyEnum = BoardUI.Difficulty.Intermediate;
                 break;
             case "expert":
-                difficultyEnum = Board.Difficulty.Expert;
+                difficultyEnum = BoardUI.Difficulty.Expert;
                 break;
             default:
                 Debug.Log("No valid difficulty specified.");
