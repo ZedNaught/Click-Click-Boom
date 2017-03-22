@@ -166,7 +166,6 @@ public class BoardUI : MonoBehaviour {
     }
 
     public void CheckIfGameWon() {
-        Debug.Log("checking if game won");
         if (revealedCells == currentDifficulty.emptyCells) {
             DoGameVictory();
         }
