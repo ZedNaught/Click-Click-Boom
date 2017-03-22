@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class BoardUI : MonoBehaviour {
-    public static BoardUI Instance;
+public class Board : MonoBehaviour {
+    public static Board Instance;
     public int revealedCells;
     [SerializeField]
     RectTransform[] mineCountDigits = new RectTransform[3];
@@ -40,7 +40,7 @@ public class BoardUI : MonoBehaviour {
     GameObject cellPrefab;
     [SerializeField]
     RectTransform cellContainer;
-    CellUI[,] cells;
+    Cell[,] cells;
     [SerializeField]
     public Image faceButtonImage;
 
@@ -70,7 +70,7 @@ public class BoardUI : MonoBehaviour {
     }
 
     public void PlaceMines() {
-        foreach (CellUI cell in cells) {
+        foreach (Cell cell in cells) {
             cell.ContainsMine = false;
         }
 
@@ -82,7 +82,7 @@ public class BoardUI : MonoBehaviour {
             cells[yIndex, xIndex].ContainsMine = true;
         }
 
-        foreach (CellUI cell in cells) {
+        foreach (Cell cell in cells) {
             cell.adjacentMineCount = GetAdjacentMineCount(cell);
         }
     }
@@ -90,7 +90,7 @@ public class BoardUI : MonoBehaviour {
     void CreateBoard() {
         Difficulty difficultyEnum = (Difficulty)PlayerPrefs.GetInt("DifficultyEnum", (int)Difficulty.Expert);
         currentDifficulty = difficultyMap[difficultyEnum];
-        cells = new CellUI[currentDifficulty.height, currentDifficulty.width];
+        cells = new Cell[currentDifficulty.height, currentDifficulty.width];
 
         Vector2 cellContainerSize = new Vector2(currentDifficulty.width * 16, currentDifficulty.height * 16);
         cellContainer.sizeDelta = cellContainerSize;
@@ -105,7 +105,7 @@ public class BoardUI : MonoBehaviour {
 
         for (int dy = 0; dy < currentDifficulty.height; dy++) {
             for (int dx = 0; dx < currentDifficulty.width; dx++) {
-                CellUI cell = ((GameObject) Instantiate(cellPrefab, cellContainer)).GetComponent<CellUI>();
+                Cell cell = ((GameObject) Instantiate(cellPrefab, cellContainer)).GetComponent<Cell>();
                 cell.board = this;
                 cell.transform.localScale = Vector3.one;
                 cell.gameObject.name = "cell_" + dx + "_" + dy;
@@ -117,7 +117,7 @@ public class BoardUI : MonoBehaviour {
     }
 
     void InitializeBoard() {
-        foreach (CellUI cell in cells) {
+        foreach (Cell cell in cells) {
             cell.Reset();
         }
         PlaceMines();
@@ -174,7 +174,7 @@ public class BoardUI : MonoBehaviour {
     public void DoGameOver() {
         GameManager.Instance.gameOver = true;
         Timer.Instance.StopTimer();
-        foreach (CellUI cell in cells) {
+        foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }
         faceButtonImage.sprite = Sprites.spritesDict["face_dead"];
@@ -184,7 +184,7 @@ public class BoardUI : MonoBehaviour {
         Debug.Log(string.Format("You win! Time: {0:0.00} seconds.", Timer.Instance.GameTime));
         GameManager.Instance.gameOver = true;
         Timer.Instance.StopTimer();
-        foreach (CellUI cell in cells) {
+        foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }
         faceButtonImage.sprite = Sprites.spritesDict["face_cool"];
@@ -201,16 +201,16 @@ public class BoardUI : MonoBehaviour {
         mineCountDigits[2].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + ones];
     }
 
-    List<CellUI> GetAdjacentCells(CellUI centerCell, bool skipFlagged = false) {
+    List<Cell> GetAdjacentCells(Cell centerCell, bool skipFlagged = false) {
         // TODO // could probably be optimized
-        List<CellUI> adjacentCells = new List<CellUI>();
+        List<Cell> adjacentCells = new List<Cell>();
         for (int y = centerCell.yPosition - 1; y <= centerCell.yPosition + 1; y++) {
             for (int x = centerCell.xPosition - 1; x <= centerCell.xPosition + 1; x++) {
                 // make sure cell at coordinates exists and isn't the input cell
                 if ((x != centerCell.xPosition || y != centerCell.yPosition) &&
                         x >= 0 && x < currentDifficulty.width &&
                         y >= 0 && y < currentDifficulty.height) {
-                    CellUI adjacentCell = cells[y, x];
+                    Cell adjacentCell = cells[y, x];
                     if (skipFlagged && adjacentCell.Flagged) {
                         continue;
                     }
@@ -222,10 +222,10 @@ public class BoardUI : MonoBehaviour {
         return adjacentCells;
     }
 
-    int GetAdjacentMineCount(CellUI cell) {
+    int GetAdjacentMineCount(Cell cell) {
         int numAdjacentMines = 0;
-        List<CellUI> adjacentCells = GetAdjacentCells(cell);
-        foreach (CellUI adjacentCell in adjacentCells) {
+        List<Cell> adjacentCells = GetAdjacentCells(cell);
+        foreach (Cell adjacentCell in adjacentCells) {
             if (adjacentCell.ContainsMine) {
                 numAdjacentMines++;
             }
@@ -233,10 +233,10 @@ public class BoardUI : MonoBehaviour {
         return numAdjacentMines;
     }
 
-    int GetAdjacentFlagCount(CellUI cell) {
+    int GetAdjacentFlagCount(Cell cell) {
         int numAdjacentFlags = 0;
-        List<CellUI> adjacentCells = GetAdjacentCells(cell);
-        foreach (CellUI adjacentCell in adjacentCells) {
+        List<Cell> adjacentCells = GetAdjacentCells(cell);
+        foreach (Cell adjacentCell in adjacentCells) {
             if (adjacentCell.Flagged) {
                 numAdjacentFlags++;
             }
@@ -244,18 +244,18 @@ public class BoardUI : MonoBehaviour {
         return numAdjacentFlags;
     }
 
-    public void RevealAdjacentUnflaggedCells(CellUI cell) {
+    public void RevealAdjacentUnflaggedCells(Cell cell) {
         if (cell.adjacentMineCount == GetAdjacentFlagCount(cell)) {
-            List<CellUI> adjacentUnflaggedCells = GetAdjacentCells(cell, skipFlagged: true);
+            List<Cell> adjacentUnflaggedCells = GetAdjacentCells(cell, skipFlagged: true);
             // special pass that will only detonate mines
             // prevents revealing safe cells before detonation
-            foreach (CellUI adjacentCell in adjacentUnflaggedCells) {
+            foreach (Cell adjacentCell in adjacentUnflaggedCells) {
                 if (adjacentCell.ContainsMine) {
                     adjacentCell.Reveal();
                     return;
                 }
             }
-            foreach (CellUI adjacentCell in adjacentUnflaggedCells) {
+            foreach (Cell adjacentCell in adjacentUnflaggedCells) {
                 if (adjacentCell.Clickable) {
                     adjacentCell.Reveal();
                 }
@@ -265,7 +265,7 @@ public class BoardUI : MonoBehaviour {
 
     int GetFlagCount() {
         int count = 0;
-        foreach (CellUI cell in cells) {
+        foreach (Cell cell in cells) {
             if (cell.Flagged) {
                 count += 1;
             }

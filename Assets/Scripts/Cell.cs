@@ -6,7 +6,7 @@ using System.Collections;
 enum CellState { Default, Revealed, Flagged, Suspect, Detonated, RevealUndetonated,
                  FlaggedWrong }
 
-public class CellUI : MonoBehaviour,
+public class Cell : MonoBehaviour,
                       IPointerEnterHandler,
                       IPointerExitHandler,
                       IPointerClickHandler,
@@ -87,7 +87,7 @@ public class CellUI : MonoBehaviour,
     Image image;
     Color cellUnderMouseColor = new Color(0.93f, 0.93f, 0.93f);
     bool underMouse = false;
-    public BoardUI board;
+    public Board board;
     public int adjacentMineCount;
 
 
@@ -119,7 +119,7 @@ public class CellUI : MonoBehaviour,
         else if (Revealed) {
             board.RevealAdjacentUnflaggedCells(this);
         }
-        BoardUI.Instance.CheckIfGameWon();
+        Board.Instance.CheckIfGameWon();
     }
 
     public void Reveal() {
@@ -141,7 +141,7 @@ public class CellUI : MonoBehaviour,
         }
         else {
             CellState = CellState.Revealed;
-            BoardUI.Instance.revealedCells++;
+            Board.Instance.revealedCells++;
             image.sprite = Sprites.spritesDict["cell_" + adjacentMineCount];
             if (adjacentMineCount == 0) {
                 board.RevealAdjacentUnflaggedCells(this);
@@ -160,7 +160,7 @@ public class CellUI : MonoBehaviour,
         else if (CellState == CellState.Flagged) {
             CellState = CellState.Default;
         }
-        BoardUI.Instance.UpdateMineCount();
+        Board.Instance.UpdateMineCount();
     }
 
     public void DoGameOverReveal() {
@@ -205,7 +205,7 @@ public class CellUI : MonoBehaviour,
         }
 
         if (Clickable && eventData.button == PointerEventData.InputButton.Left) {
-            BoardUI.Instance.faceButtonImage.sprite = Sprites.spritesDict["face_scared"];
+            Board.Instance.faceButtonImage.sprite = Sprites.spritesDict["face_scared"];
         }
     }
 }
