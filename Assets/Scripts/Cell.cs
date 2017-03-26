@@ -191,11 +191,8 @@ public class Cell : MonoBehaviour,
             return;
         }
 
-        if (eventData.button == PointerEventData.InputButton.Left) {
+        if (eventData.button == PointerEventData.InputButton.Left && !Input.GetMouseButton(1)) {
             Click();
-        }
-        else if (eventData.button == PointerEventData.InputButton.Right) {
-            ToggleFlag();
         }
     }
 
@@ -206,6 +203,10 @@ public class Cell : MonoBehaviour,
 
         if (Clickable && eventData.button == PointerEventData.InputButton.Left) {
             Board.Instance.faceButtonImage.sprite = Sprites.spritesDict["face_scared"];
+        }
+
+        else if (eventData.button == PointerEventData.InputButton.Right) {
+            ToggleFlag();
         }
     }
 }
