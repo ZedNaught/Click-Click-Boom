@@ -2,49 +2,52 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+
+struct DifficultySpec {
+    public int width;
+    public int height;
+    public int mineCount;
+    public int totalCells;
+    public int emptyCells;
+
+    public DifficultySpec(int width, int height, int mineCount) {
+        this.width = width;
+        this.height = height;
+        this.mineCount = mineCount;
+        this.totalCells = width * height;
+        this.emptyCells = this.totalCells - mineCount;
+    }
+}
+
 public class Board : MonoBehaviour {
     public static Board Instance;
-    public int revealedCells;
-    [SerializeField]
-    RectTransform[] mineCountDigits = new RectTransform[3];
+    public int revealedCells;  // count used for victory check
 
-    // difficulty
-    struct DifficultySpec {
-        public int width;
-        public int height;
-        public int mineCount;
-        public int totalCells;
-        public int emptyCells;
-
-        public DifficultySpec(int width, int height, int mineCount) {
-            this.width = width;
-            this.height = height;
-            this.mineCount = mineCount;
-            this.totalCells = width * height;
-            this.emptyCells = this.totalCells - mineCount;
-        }
-    }
+    // standard difficulty specifications
     static DifficultySpec DIFFICULTY_BEGINNER = new DifficultySpec(8, 8, 10);
     static DifficultySpec DIFFICULTY_INTERMEDIATE = new DifficultySpec(16, 16, 40);
     static DifficultySpec DIFFICULTY_EXPERT = new DifficultySpec(30, 16, 99);
-    DifficultySpec currentDifficulty;
+    // enum used for storing difficulty choice in PlayerPrefs as int
     public enum Difficulty { Beginner, Intermediate, Expert };
     Dictionary<Difficulty, DifficultySpec> difficultyMap = new Dictionary<Difficulty, DifficultySpec>() {
         {Difficulty.Beginner, DIFFICULTY_BEGINNER},
         {Difficulty.Intermediate, DIFFICULTY_INTERMEDIATE},
         {Difficulty.Expert, DIFFICULTY_EXPERT},
     };
+    DifficultySpec currentDifficulty;
 
-    // game objects
+    // game object references
+    Cell[,] cells;
     [SerializeField]
     GameObject cellPrefab;
     [SerializeField]
     RectTransform cellContainer;
-    Cell[,] cells;
     [SerializeField]
-    public Image faceButtonImage;
+    Image faceButtonImage;
+    [SerializeField]
+    RectTransform[] mineCountDigits = new RectTransform[3];
 
-    bool _freshBoard;
+    bool _freshBoard;  // whether the first cell has been clicked
     public bool FreshBoard {
         get { return _freshBoard; }
         set {
@@ -54,7 +57,7 @@ public class Board : MonoBehaviour {
             }
             else {
                 Timer.Instance.ResetTimer();
-                faceButtonImage.sprite = Sprites.spritesDict["face_smile"];
+                SetFaceImage("face_smile");
             }
         }
     }
@@ -138,7 +141,7 @@ public class Board : MonoBehaviour {
 
     void HandleInput() {
         if (!GameManager.Instance.gameOver && Input.GetMouseButtonUp(0)) {
-            faceButtonImage.sprite = Sprites.spritesDict["face_smile"];
+            SetFaceImage("face_smile");
         }
 
         // restart with R key
@@ -177,7 +180,7 @@ public class Board : MonoBehaviour {
         foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }
-        faceButtonImage.sprite = Sprites.spritesDict["face_dead"];
+        SetFaceImage("face_dead");
     }
 
     void DoGameVictory() {
@@ -187,7 +190,7 @@ public class Board : MonoBehaviour {
         foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }
-        faceButtonImage.sprite = Sprites.spritesDict["face_cool"];
+        SetFaceImage("face_cool");
     }
 
     public void UpdateMineCount() {
@@ -273,7 +276,9 @@ public class Board : MonoBehaviour {
         return count;
     }
 
-    void UpdateTimer() {
-        
+    public void SetFaceImage(string name) {
+        if (Sprites.spritesDict.ContainsKey(name)) {
+            faceButtonImage.sprite = Sprites.spritesDict[name];
+        }
     }
 }

@@ -202,7 +202,7 @@ public class Cell : MonoBehaviour,
         }
 
         if (Clickable && eventData.button == PointerEventData.InputButton.Left) {
-            Board.Instance.faceButtonImage.sprite = Sprites.spritesDict["face_scared"];
+            Board.Instance.SetFaceImage("face_scared");
         }
 
         else if (eventData.button == PointerEventData.InputButton.Right) {
