@@ -206,17 +206,21 @@ public class Board : MonoBehaviour {
         }
     }
 
-    List<Cell> GetAdjacentCells(Cell centerCell, bool skipFlagged = false) {
+    List<Cell> GetAdjacentCells(Cell centerCell, bool includeFlagged = true) {
+        int cx = centerCell.xPosition;
+        int cy = centerCell.yPosition;
+
         // TODO // could probably be optimized
         List<Cell> adjacentCells = new List<Cell>();
-        for (int y = centerCell.yPosition - 1; y <= centerCell.yPosition + 1; y++) {
-            for (int x = centerCell.xPosition - 1; x <= centerCell.xPosition + 1; x++) {
+        for (int y = cy - 1; y <= cy + 1; y++) {
+            for (int x = cx - 1; x <= cx + 1; x++) {
                 // make sure cell at coordinates exists and isn't the input cell
-                if ((x != centerCell.xPosition || y != centerCell.yPosition) &&
-                        x >= 0 && x < currentDifficulty.width &&
-                        y >= 0 && y < currentDifficulty.height) {
+                bool cellIsSelf = (x == cx && y == cy);
+                bool cellInBounds = (x >= 0 && x < currentDifficulty.width &&
+                                     y >= 0 && y < currentDifficulty.height);
+                if (cellInBounds && !cellIsSelf) {
                     Cell adjacentCell = cells[y, x];
-                    if (skipFlagged && adjacentCell.Flagged) {
+                    if (adjacentCell.Flagged && !includeFlagged) {
                         continue;
                     }
                     adjacentCells.Add(adjacentCell);
@@ -251,7 +255,7 @@ public class Board : MonoBehaviour {
 
     public void RevealAdjacentUnflaggedCells(Cell cell) {
         if (cell.adjacentMineCount == GetAdjacentFlagCount(cell)) {
-            List<Cell> adjacentUnflaggedCells = GetAdjacentCells(cell, skipFlagged: true);
+            List<Cell> adjacentUnflaggedCells = GetAdjacentCells(cell, includeFlagged: false);
             // special pass that will only detonate mines
             // prevents revealing safe cells before detonation
             foreach (Cell adjacentCell in adjacentUnflaggedCells) {
