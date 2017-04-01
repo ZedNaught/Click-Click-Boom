@@ -100,7 +100,7 @@ public class Cell : MonoBehaviour,
     }
 
     void HandleInput() {
-        if (!underMouse || GameManager.Instance.gameOver) {
+        if (!underMouse || board.gameManager.gameOver) {
             return;
         }
 
@@ -119,11 +119,11 @@ public class Cell : MonoBehaviour,
         else if (Revealed) {
             board.RevealAdjacentUnflaggedCells(this);
         }
-        Board.Instance.CheckIfGameWon();
+        board.CheckIfGameWon();
     }
 
     public void Reveal() {
-        if (GameManager.Instance.gameOver) {
+        if (board.gameManager.gameOver) {
             return;
         }
 
@@ -141,7 +141,7 @@ public class Cell : MonoBehaviour,
         }
         else {
             CellState = CellState.Revealed;
-            Board.Instance.revealedCells++;
+            board.revealedCells++;
             image.sprite = Sprites.spritesDict["cell_" + adjacentMineCount];
             if (adjacentMineCount == 0) {
                 board.RevealAdjacentUnflaggedCells(this);
@@ -150,7 +150,7 @@ public class Cell : MonoBehaviour,
     }
 
     public void ToggleFlag() {
-        if (GameManager.Instance.gameOver || Revealed) {
+        if (board.gameManager.gameOver || Revealed) {
             return;
         }
 
@@ -160,7 +160,7 @@ public class Cell : MonoBehaviour,
         else if (CellState == CellState.Flagged) {
             CellState = CellState.Default;
         }
-        Board.Instance.UpdateMineCount();
+        board.UpdateMineCount();
     }
 
     public void DoGameOverReveal() {
@@ -187,7 +187,7 @@ public class Cell : MonoBehaviour,
     }
 
     public void OnPointerClick(PointerEventData eventData) {
-        if (GameManager.Instance.gameOver) {
+        if (board.gameManager.gameOver) {
             return;
         }
 
@@ -197,12 +197,12 @@ public class Cell : MonoBehaviour,
     }
 
     public void OnPointerDown(PointerEventData eventData) {
-        if (GameManager.Instance.gameOver) {
+        if (board.gameManager.gameOver) {
             return;
         }
 
         if (Clickable && eventData.button == PointerEventData.InputButton.Left) {
-            Board.Instance.SetFaceImage("face_scared");
+            board.SetFaceImage("face_scared");
         }
 
         else if (eventData.button == PointerEventData.InputButton.Right) {

@@ -20,6 +20,9 @@ struct DifficultySpec {
 }
 
 public class Board : MonoBehaviour {
+    public GameManager gameManager;
+    [SerializeField]
+    Timer timer;
     public static Board Instance;
     public int revealedCells;  // count used for victory check
 
@@ -53,10 +56,10 @@ public class Board : MonoBehaviour {
         set {
             _freshBoard = value;
             if (!_freshBoard) {
-                Timer.Instance.StartTimer();
+                timer.StartTimer();
             }
             else {
-                Timer.Instance.ResetTimer();
+                timer.ResetTimer();
                 SetFaceImage("face_smile");
             }
         }
@@ -125,13 +128,13 @@ public class Board : MonoBehaviour {
         }
         PlaceMines();
         FreshBoard = true;
-        GameManager.Instance.gameOver = false;
+        gameManager.gameOver = false;
         revealedCells = 0;
         UpdateMineCount();
     }
 
     public void RestartGame() {
-        Timer.Instance.StopTimer();
+        timer.StopTimer();
         InitializeBoard();
     }
 
@@ -140,7 +143,7 @@ public class Board : MonoBehaviour {
     }
 
     void HandleInput() {
-        if (!GameManager.Instance.gameOver && Input.GetMouseButtonUp(0)) {
+        if (!gameManager.gameOver && Input.GetMouseButtonUp(0)) {
             SetFaceImage("face_smile");
         }
 
@@ -152,7 +155,7 @@ public class Board : MonoBehaviour {
 
         // exit to main menu with M key
         if (Input.GetKeyUp(KeyCode.M)) {
-            GameManager.Instance.GoToMenu();
+            gameManager.GoToMenu();
         }
 
         if (Config.ENABLE_DEBUG_COMMANDS) {
@@ -175,8 +178,8 @@ public class Board : MonoBehaviour {
     }
 
     public void DoGameOver() {
-        GameManager.Instance.gameOver = true;
-        Timer.Instance.StopTimer();
+        gameManager.gameOver = true;
+        timer.StopTimer();
         foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }
@@ -184,9 +187,9 @@ public class Board : MonoBehaviour {
     }
 
     void DoGameVictory() {
-        Debug.Log(string.Format("You win! Time: {0:0.00} seconds.", Timer.Instance.GameTime));
-        GameManager.Instance.gameOver = true;
-        Timer.Instance.StopTimer();
+        Debug.Log(string.Format("You win! Time: {0:0.00} seconds.", timer.GameTime));
+        gameManager.gameOver = true;
+        timer.StopTimer();
         foreach (Cell cell in cells) {
             cell.DoGameOverReveal();
         }

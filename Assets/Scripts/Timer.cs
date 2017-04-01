@@ -2,8 +2,6 @@
 using UnityEngine.UI;
 
 public class Timer : MonoBehaviour {
-    public static Timer Instance;
-
     public float gameStartTime;
     public float GameTime {
         get {
@@ -15,10 +13,6 @@ public class Timer : MonoBehaviour {
     Image[] timerDigits = new Image[3];
     bool started = false;
     int prevTimeElapsed = -1;
-
-    void Start() {
-        Instance = this;
-    }
 
     public void StartTimer() {
         started = true;
