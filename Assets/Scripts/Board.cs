@@ -45,7 +45,7 @@ public class Board : MonoBehaviour {
     [SerializeField]
     Image faceButtonImage;
     [SerializeField]
-    RectTransform[] mineCountDigits = new RectTransform[3];
+    Image[] mineCountDigits = new Image[3];
 
     bool _freshBoard;  // whether the first cell has been clicked
     public bool FreshBoard {
@@ -196,12 +196,11 @@ public class Board : MonoBehaviour {
     public void UpdateMineCount() {
         int mineCount = currentDifficulty.mineCount - GetFlagCount();
         mineCount = Mathf.Max(0, mineCount);
-        int hundreds = (mineCount / 100) % 10;
-        int tens = (mineCount / 10) % 10;
-        int ones = mineCount % 10;
-        mineCountDigits[0].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + hundreds];
-        mineCountDigits[1].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + tens];
-        mineCountDigits[2].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + ones];
+        for (int i = 0; i < mineCountDigits.Length; i++) {
+            int digitValue = (mineCount / (int)Mathf.Pow(10, i)) % 10;
+            int digitIndex = mineCountDigits.Length - (i + 1);
+            mineCountDigits[digitIndex].sprite = Sprites.spritesDict["clock_" + digitValue];
+        }
     }
 
     List<Cell> GetAdjacentCells(Cell centerCell, bool skipFlagged = false) {

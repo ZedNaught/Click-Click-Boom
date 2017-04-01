@@ -1,6 +1,4 @@
-﻿//using System.Collections;
-//using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class Timer : MonoBehaviour {
@@ -14,9 +12,9 @@ public class Timer : MonoBehaviour {
     }
 
     [SerializeField]
-    RectTransform[] digits = new RectTransform[3];
-    int hundreds, tens, ones;
+    Image[] timerDigits = new Image[3];
     bool started = false;
+    int prevTimeElapsed = -1;
 
     void Start() {
         Instance = this;
@@ -36,13 +34,11 @@ public class Timer : MonoBehaviour {
     }
 
     void SetTimer(int timeElapsed) {
-        // TODO // this could be done in a simple loop i think
-        hundreds = (timeElapsed / 100) % 10;
-        tens = (timeElapsed / 10) % 10;
-        ones = timeElapsed % 10;
-        digits[0].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + hundreds];
-        digits[1].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + tens];
-        digits[2].GetComponent<Image>().sprite = Sprites.spritesDict["clock_" + ones];
+        for (int i = 0; i < timerDigits.Length; i++) {
+            int digitValue = (timeElapsed / (int)Mathf.Pow(10, i)) % 10;
+            int digitIndex = timerDigits.Length - (i + 1);
+            timerDigits[digitIndex].sprite = Sprites.spritesDict["clock_" + digitValue];
+        }
     }
 
     void Update() {
@@ -50,9 +46,9 @@ public class Timer : MonoBehaviour {
             return;
         }
         int timeElapsed = (int)GameTime;
-        if (timeElapsed == ones % 10) {
-            return;
+        if (timeElapsed != prevTimeElapsed) {
+            SetTimer(timeElapsed);
         }
-        SetTimer(timeElapsed);
+        prevTimeElapsed = timeElapsed;
     }
 }
