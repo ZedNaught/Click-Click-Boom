@@ -2,9 +2,6 @@
 using UnityEngine;
 
 public class Sprites : MonoBehaviour {
-    // sprites
-//    [SerializeField]
-//    static Texture2D spritesheet;
     public static Dictionary<string, Sprite> spritesDict;
     public static Sprite[] cellSprites = new Sprite[9];
     public static Sprite[] clockSprites = new Sprite[10];
